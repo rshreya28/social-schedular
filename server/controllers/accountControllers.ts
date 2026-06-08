@@ -3,7 +3,7 @@
 
 import { AuthRequest } from "../middlewares/authMiddleware.js";
 import { Response } from "express";
-import Account from "../models/account.js";
+import  { Account } from "../models/account.js";
 import zernio from "../config/zernio.js";
 
 
