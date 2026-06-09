@@ -5,7 +5,7 @@ import zernio from "../config/zernio.js";
 import { ActivityLog } from "../models/ActivityLog.js";
 
 export const initScheduler = ()=>{
-    cron.schedule(" * * * * *", async ()=>{
+    cron.schedule("* * * * *", async ()=>{
           try{
            const now = new Date();
            const postsToPublished = await Post.find({status: "scheduled", scheduledFor:
@@ -37,7 +37,7 @@ export const initScheduler = ()=>{
                         platforms: zernioPlatforms,  
                 }
 
-                console.log(`publishing post ${post._id} to zernio with media: ${post.mediaUrl || "none"}`)
+                console.log('publishing post ${post._id} to zernio with media: ${post.mediaUrl || "none"}')
 
                 const response = await zernio.posts.createPost({
                     body: payload
@@ -47,7 +47,7 @@ export const initScheduler = ()=>{
                 if(!publishedPost){
                     throw new Error("Failed to get post object from zernio response");
                 }
-                console.log(`zernio post created: ${publishedPost._id || publishedPost.id}`);
+                console.log('zernio post created: ${publishedPost._id || publishedPost.id}');
 
                 post.status = "published";
                 await post.save();
@@ -66,7 +66,7 @@ export const initScheduler = ()=>{
             }
           }
           if(postsToPublished.length > 0){
-            console.log('Evaluated ${postsToPublish.length} posts at ${now.toISOString()}');
+            console.log('Evaluated ${postsToPublished.length} posts at ${now.toISOString()}');
           }
 
           }catch(error){
