@@ -1,8 +1,9 @@
 // React import not required with the new JSX transform
-
 import { ArrowRightIcon, HistoryIcon, Loader2Icon, Wand2Icon, XIcon, CalendarIcon, ClockIcon, Globe, Hash, Camera, Briefcase, TimerIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { dummyGenerationData } from "../assets/assets";
+import api from "../api/axios";
+import toast from "react-hot-toast";
+
 
 type Platform = { id: string; name: string; icon: any };
 const PLATFORMS: Platform[] = [
@@ -34,45 +35,69 @@ const AIComposer = () => {
     "Excited",
   ];
  const handleSchedule = async () => {
-  try {
-    setScheduling(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    setActiveScheduler(null);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setScheduling(false);
+  if(!activeScheduler) return;
+  if(selectedplatforms.length === 0){
+     toast.error("select at least one platform");
+     return;
   }
+  if(!scheduledDate || !scheduledTime){
+    toast.error("select date and time");
+    return;
+  }
+  const scheduledFor = new Date(`${scheduledDate}T${scheduledTime}`).toISOString()
+  setScheduling(true);
+  try {
+      await api.post("/api/posts",{
+        content: activeScheduler.content,
+        mediaUrl: activeScheduler.mediaUrl,
+        mediaType: activeScheduler.mediaType,
+        platforms: selectedplatforms,
+        scheduledFor,
+        status: "scheduled",
+      })
+      toast.success("AI post scheduled");
+      setActiveScheduler(null);
+      setScheduledDate("");
+      setScheduledTime("");
+      setSelectedPlatforms([]);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to scheduled");
+    } finally{
+       setScheduling(false);
+    }
+
 };
 
-
-
-
-
   const fetchGenerations = async () => {
-    setGenerations(dummyGenerationData);
-  };
+   try{
+       const {data} = await api.get("/api/posts/generations");
+       setGenerations(data)
+   }catch(error:any){
+    toast.error(error?.response?.data?.message || error?.message);
+
+   }  
+  }
 
   useEffect(() => {
     fetchGenerations();
   }, []);
 
   const handleGenerate = async () => {
-    try {
-      setLoading(true);
-
-
-
-      // Your API call here
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+    if(!promt){
+      toast.error("please enter a prompt");
     }
-  };
+    setLoading(true)
+    try{
+    const {data} = await api.post("/api/posts/generate", {prompt: promt,tone,generateImage});
+    setGenerations([data, ...generations]);
+    setActiveScheduler(data)
+    toast.success("content generated!")
+    }catch(error: any){
+      toast.error(error?.response?.data?.message || error?.message);
+    }finally{
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20 animate-in fade-in duration-700">

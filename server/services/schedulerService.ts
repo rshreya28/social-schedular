@@ -15,7 +15,7 @@ export const initScheduler = ()=>{
             try{
                 const accounts = await Account.find({
                     user: post.user,
-                    platform: post.platform,
+                    platform: { $in: post.platforms as any[] },
                     status: "connected",
                     zernioAccountId: {$exists: true}
                 })
@@ -25,20 +25,21 @@ export const initScheduler = ()=>{
                     continue;
                 }
                 const zernioPlatforms = accounts.map((acc)=>({
-                    tfrom: acc.platform as any,
+                    platform: acc.platform as any,
                     accountId: acc.zernioAccountId!
                 }))
 
                 const payload = {
-                    content: post.content,
-                    publishedNow: true,
-                    ...(post.mediaUrl ? {mediaItems: [{type: post.mediaType || "image",
-                        url: post.mediaUrl}]} : {}),
-                        platforms: zernioPlatforms,  
-                }
+               content: post.content,
+               status: "published",
+              publishNow: true,
+           ...(post.mediaUrl ? {mediaItems: [{type: post.mediaType || "image",
+             url: post.mediaUrl}]} : {}),
+          platforms: zernioPlatforms,
+}
+                console.log(`publishing post ${post._id} to zernio with media: ${post.mediaUrl || "none"}`)
 
-                console.log('publishing post ${post._id} to zernio with media: ${post.mediaUrl || "none"}')
-
+                console.log("PAYLOAD:", JSON.stringify(payload, null, 2));
                 const response = await zernio.posts.createPost({
                     body: payload
                 })
@@ -47,7 +48,7 @@ export const initScheduler = ()=>{
                 if(!publishedPost){
                     throw new Error("Failed to get post object from zernio response");
                 }
-                console.log('zernio post created: ${publishedPost._id || publishedPost.id}');
+                console.log(`zernio post created: ${publishedPost._id || publishedPost.id}`);
 
                 post.status = "published";
                 await post.save();
@@ -59,14 +60,14 @@ export const initScheduler = ()=>{
                     relatedPost: post._id,
                 })
             } catch(err: any){
-                console.error('Failed to published post ${post._id} : ', err?.response?.data || err?.message );
+                console.error(`Failed to published post ${post._id} : `, err?.response?.data || err?.message );
                 post.status = "failed";
                 await post.save();
                 
             }
           }
           if(postsToPublished.length > 0){
-            console.log('Evaluated ${postsToPublished.length} posts at ${now.toISOString()}');
+            console.log(`Evaluated ${postsToPublished.length} posts at ${now.toISOString()}`);
           }
 
           }catch(error){

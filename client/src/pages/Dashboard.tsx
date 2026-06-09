@@ -4,12 +4,8 @@ import {
   TrendingUpIcon,
   SendIcon,
 } from "lucide-react";
+import api from "../api/axios";
 
-import {
-  dummyPostsData,
-  dummyAccountsData,
-  dummyActivityData,
-} from "../assets/assets";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -23,20 +19,37 @@ const [activities, setActivities] = useState<any[]>([]);
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const posts = dummyPostsData || [];
-        const accounts = dummyAccountsData || [];
-        const activitiesData = dummyActivityData || [];
+       const [postsRes, accountRes, activityRes] = await Promise.all([
+    api.get("/api/posts"),
+    api.get("/api/accounts"),
+    api.get("/api/activity"),
+]);
+     
+const posts = postsRes.data;
+const accounts = accountRes.data;
+const activitiesData = activityRes.data;
+
+console.log("Posts:", posts);
+console.log("Accounts:", accounts);
+console.log("Activities:", activitiesData);
 
         setStats({
-          scheduledPosts: posts.filter((post: any) => post?.status === "scheduled").length,
-
-          publishedPosts: posts.filter((post: any) => post?.status === "published").length,
-
-          aiCompositions: posts.filter((post: any) => post?.isAIComposed === true || post?.aiGenerated === true ).length,
-          accountsConnected: accounts.length,
+          scheduledPosts: Array.isArray(posts)
+            ? posts.filter((post: any) => post?.status === "scheduled").length
+            : 0,
+          publishedPosts: Array.isArray(posts)
+            ? posts.filter((post: any) => post?.status === "published").length
+            : 0,
+          aiCompositions: Array.isArray(posts)
+            ? posts.filter(
+                (post: any) =>
+                  post?.isAIComposed === true || post?.aiGenerated === true
+              ).length
+            : 0,
+          accountsConnected: Array.isArray(accounts) ? accounts.length : 0,
         });
 
-        setActivities(activitiesData);
+        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       } catch (error) {
         console.error(
           "Error fetching dashboard data:",

@@ -26,7 +26,7 @@ const getOrCreateZernioProfile = async (user:any) : Promise<string> =>
       })
       const created = (createdData.data as any)?.profile || createdData.data;
 
-      const pid = created?._ || created?.id;
+      const pid = created?._id || created?.id;
 
       if(!pid){
          throw new Error("failed to create zernio profile - no Id returned")
@@ -50,9 +50,8 @@ export const generateAuthUrl = async (req: AuthRequest, res: Response): Promise<
     const {platform} = req.params;
    const profileId = await getOrCreateZernioProfile(req.user);
 
-    const origin = req.headers.origin;
-    const redirectUrl ='${origin}/accounts';
-
+   const origin = "http://127.0.0.1:3000";
+    const redirectUrl = `${origin}/accounts?connected=${platform}`;
     const result = await zernio.connect.getConnectUrl({
       path: {platform: platform as any },
       query: {
@@ -66,7 +65,7 @@ export const generateAuthUrl = async (req: AuthRequest, res: Response): Promise<
 
     const authUrl = data.authUrl;
     if(!authUrl){
-      throw new Error('zernio returned no authUrl. Full response: ${JSON.stringify(data)}')
+      throw new Error(`zernio returned no authUrl. Full response: ${JSON.stringify(data)}`)
     }
 
     res.json({url: authUrl})
@@ -99,7 +98,7 @@ export const syncAccounts = async (req: AuthRequest, res: Response): Promise<voi
       
       for(const zAccount of zernioAccounts){
          const zid = zAccount._id || zAccount.id;
-         if(zid){
+         if(!zid){
             console.warn("skipping account with no ID", zAccount);
             continue;
          }

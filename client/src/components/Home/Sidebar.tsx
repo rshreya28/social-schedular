@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({
   isOpen,
@@ -16,18 +17,8 @@ const Sidebar = ({
   setIsOpen: (val: boolean) => void;
 }) => {
 
-  // Dummy Auth Data
-  const auth = {
-    logout: () => {
-      window.location.href = "/";
-    },
-    user: {
-      name: "John Doe",
-      email: "john.doe@example.com",
-    },
-  };
 
-  const { logout, user } = auth;
+  const { logout, user } = useAuth();
 
   const location = useLocation();
 
@@ -105,17 +96,17 @@ const Sidebar = ({
 
           {/* Avatar */}
           <div className="size-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600">
-            {user?.name?.charAt(0).toUpperCase() || "U"}
+            {(user?.name?.charAt(0) ?? "U").toUpperCase()}
           </div>
 
           {/* User Info */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-700 truncate">
-              {user.name}
+              {user?.name ?? "User"}
             </p>
 
             <p className="text-xs text-slate-500 truncate">
-              {user.email}
+              {user?.email ?? ""}
             </p>
           </div>
 

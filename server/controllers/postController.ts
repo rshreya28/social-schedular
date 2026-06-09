@@ -181,7 +181,7 @@ export const schedulePosts =  async (req: AuthRequest, res: Response): Promise<v
         parsedPlatforms = platforms.split(",");
     }
    }
-   let mediaUrl: string | undefined = req.body.mediUrl;
+   let mediaUrl: string | undefined = req.body.mediaUrl;
    let mediaType: "image" | "video" | undefined =req.body.mediaType;
 
    if(req.file){
@@ -200,7 +200,7 @@ export const schedulePosts =  async (req: AuthRequest, res: Response): Promise<v
       const post  = await Post.create({
         user: req.user._id,
         content,
-        platform: parsedPlatforms,
+        platforms: parsedPlatforms,
         mediaUrl,
         mediaType,
         scheduledFor,
@@ -211,6 +211,7 @@ export const schedulePosts =  async (req: AuthRequest, res: Response): Promise<v
 
 
     } catch(error: any){
+  console.error("Generate post error:", error);
    res.status(500).json({ message: error?.message || "server error "});
     }
 }

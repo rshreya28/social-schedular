@@ -9,7 +9,7 @@ const accountSchema = new mongoose.Schema({
             "linkedin",
             "facebook",
             "instagram",
-            "fackebook_page",
+            "facebook_page",
             "linkedin_page",
             "instagram_business",
         ],
