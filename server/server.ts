@@ -20,17 +20,7 @@ const startServer = async () => {
 
 
     app.use(cors({
-    origin: function(origin, callback) {
-const allowed = [
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",
-    "https://social-schedular-rangashreya2-3298s-projects.vercel.app"
-];        if(!origin || allowed.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
+     origin: /\.vercel\.app$/,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 }));
