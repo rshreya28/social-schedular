@@ -10,17 +10,10 @@ import { AuthRequest } from "../middlewares/authMiddleware.js";
 const getOrCreateZernioProfile = async (user:any) : Promise<string> =>
 {
    try{
-      const result = await zernio.profiles.listProfiles();
-      const data = result.data as any;
-      const profiles: any[] = Array.isArray(data) ? data : data?.profiles || data?.data ||  [];
- 
-      if(profiles.length > 0)
-      {
-         const pid = profiles[0]._id || profiles[0].id
-         await User.findByIdAndUpdate(user._id, {zernioProfileId: pid})
-         return pid;
+      if (user.zernioProfileId) {
+         return user.zernioProfileId;
       }
-      
+
       const createdData = await zernio.profiles.createProfile({
          body: {name: `${user.name || user.email}'s workspace`} as any,
       })
