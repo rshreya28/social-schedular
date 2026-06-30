@@ -50,7 +50,7 @@ export const generateAuthUrl = async (req: AuthRequest, res: Response): Promise<
     const {platform} = req.params;
    const profileId = await getOrCreateZernioProfile(req.user);
 
-   const origin = "http://127.0.0.1:3000";
+    const origin = process.env.CLIENT_URL || "http://127.0.0.1:3000";
     const redirectUrl = `${origin}/accounts?connected=${platform}`;
     const result = await zernio.connect.getConnectUrl({
       path: {platform: platform as any },
